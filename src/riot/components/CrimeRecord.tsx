@@ -2,7 +2,7 @@ import { ACHIEVEMENTS } from "../data/achievements";
 import { useRiot } from "../state/RiotProvider";
 
 export function CrimeRecord() {
-  const { stats, opponentName, unlocked } = useRiot();
+  const { stats, opponentName, unlocked, courtCases } = useRiot();
 
   const rows: [string, number][] = [
     ["“K” offences", stats.kOffences],
@@ -42,6 +42,47 @@ export function CrimeRecord() {
         )}
 
         <h4 className="mt-5 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+          ⚖️ Court Docket ({courtCases.length})
+        </h4>
+        {courtCases.length === 0 ? (
+          <p className="mt-2 rounded-lg border border-dashed border-border p-2.5 text-center font-mono text-[11px] text-muted-foreground">
+            No trials on record yet. Behave yourself.
+          </p>
+        ) : (
+          <div className="mt-2 max-h-44 space-y-2 overflow-y-auto pr-1">
+            {courtCases.map((c) => (
+              <div
+                key={c.eventId}
+                className="rounded-lg border border-border bg-card/60 p-2 text-xs transition-colors hover:border-accent/50"
+              >
+                <div className="flex items-center justify-between font-mono text-[10px]">
+                  <span className="font-bold text-accent">
+                    CASE #{String(c.caseNumber).padStart(3, "0")}
+                  </span>
+                  <span className="rounded bg-primary/20 px-1.5 py-0.5 font-bold text-primary">
+                    {c.verdict}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-baseline justify-between">
+                  <span className="font-display text-sm tracking-wide text-foreground">
+                    {c.crimeType}
+                  </span>
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    vs. {c.offenderName}
+                  </span>
+                </div>
+                <p className="mt-0.5 truncate font-mono text-[10px] text-muted-foreground">
+                  Evidence: <span className="text-foreground/80">“{c.evidence}”</span>
+                </p>
+                <p className="mt-1 font-mono text-[10px] text-primary/90">
+                  ⚖️ {c.sentence}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <h4 className="mt-5 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
           🏆 Achievements ({unlocked.length}/{ACHIEVEMENTS.length})
         </h4>
         <ul className="mt-2 grid grid-cols-2 gap-1.5">
@@ -50,11 +91,11 @@ export function CrimeRecord() {
             return (
               <li
                 key={a.id}
-                title={a.description}
-                className={`rounded-lg border px-2 py-1.5 text-[10px] leading-tight ${
+                title={`${a.description}\n“${a.roast}”`}
+                className={`rounded-lg border px-2 py-1.5 text-[10px] leading-tight transition-colors ${
                   got
-                    ? "border-accent/70 bg-accent/10 text-accent"
-                    : "border-border text-muted-foreground opacity-60"
+                    ? "border-accent/70 bg-accent/10 text-accent font-semibold"
+                    : "border-border text-muted-foreground opacity-50"
                 }`}
               >
                 <span className="mr-1">{got ? a.emoji : "🔒"}</span>

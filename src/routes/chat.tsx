@@ -7,6 +7,7 @@ import { ControlDeck } from "../riot/components/ControlDeck";
 import { CrimeMeter } from "../riot/components/CrimeMeter";
 import { CrimeRecord } from "../riot/components/CrimeRecord";
 import { ExcuseGenerator } from "../riot/components/ExcuseGenerator";
+import { FinalRiotReport } from "../riot/components/FinalRiotReport";
 import { Forensics } from "../riot/components/Forensics";
 import { Memorial } from "../riot/components/Memorial";
 import { RiotStage } from "../riot/components/RiotStage";
@@ -52,6 +53,8 @@ function ChatPage() {
     simulateGhosting,
     triggerChaos,
     dead,
+    stockPrice,
+    setReportOpen,
   } = useRiot();
 
   const [draft, setDraft] = useState("");
@@ -102,6 +105,18 @@ function ChatPage() {
             )}
           </span>
           <div className="ml-auto flex items-center gap-2">
+            <div
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] font-bold ${
+                stockPrice >= 80
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                  : stockPrice >= 50
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
+                    : "border-red-500/40 bg-red-500/10 text-red-400"
+              }`}
+            >
+              <span>{stockPrice >= 80 ? "📈" : stockPrice >= 50 ? "📊" : "📉"}</span>
+              <span>₹{stockPrice.toFixed(2)}</span>
+            </div>
             <span className="rounded-full border border-chart-4/60 px-3 py-1 font-mono text-[10px] text-chart-4">
               🟢 Online
             </span>
@@ -117,6 +132,12 @@ function ChatPage() {
               className="rounded-xl border border-border px-3 py-1.5 font-display text-base transition hover:bg-secondary"
             >
               {soundOn ? "🔊 SOUND ON" : "🔇 SOUND OFF"}
+            </button>
+            <button
+              onClick={() => setReportOpen(true)}
+              className="rounded-xl border border-primary/70 bg-primary/15 px-3 py-1.5 font-display text-base text-primary transition hover:bg-primary/25"
+            >
+              📑 FINAL REPORT
             </button>
             <button
               onClick={resetRiot}
@@ -265,6 +286,7 @@ function ChatPage() {
       </main>
 
       <ChatCourt />
+      <FinalRiotReport />
     </RiotStage>
   );
 }

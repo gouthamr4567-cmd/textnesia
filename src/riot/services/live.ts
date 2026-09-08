@@ -8,6 +8,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 import type { PersonalityId } from "../data/personalities";
+import type { PunishmentId } from "../data/punishments";
 import type { RiotRoom } from "./index";
 
 export interface LiveMessage {
@@ -17,6 +18,42 @@ export interface LiveMessage {
   sender_name: string;
   text: string;
   created_at: string;
+}
+
+export interface CourtCase {
+  eventId: string;
+  roomId: string;
+  caseNumber: number;
+  offenderUserId: string;
+  offenderName: string;
+  crimeType: string;
+  evidence: string;
+  severity: number;
+  verdict: "GUILTY" | "VERY GUILTY" | "EXTREMELY GUILTY";
+  sentence: string;
+  punishmentId: PunishmentId;
+  timestamp: number;
+}
+
+export interface CourtVerdictPayload {
+  eventId: string;
+  verdict: "GUILTY" | "VERY GUILTY" | "EXTREMELY GUILTY";
+  sentence: string;
+  offenderUserId: string;
+  punishmentId: PunishmentId;
+}
+
+export interface RelationshipStockEvent {
+  roomId: string;
+  eventId: string;
+  triggeredByUserId: string;
+  triggeredByUserName: string;
+  eventType: string;
+  reason: string;
+  priceChange: number;
+  currentPrice: number;
+  percentageChange: number;
+  timestamp: number;
 }
 
 interface RoomRow {
@@ -121,6 +158,84 @@ export const liveRooms = {
   },
 };
 
+export interface AchievementBroadcastPayload {
+  achievementId: string;
+  unlockedByUserId: string;
+  unlockedByName: string;
+  timestamp: number;
+}
+
+const activeChannels = new Map<string, ReturnType<typeof supabase.channel>>();
+
+export const liveBroadcast = {
+  async unlockAchievement(roomId: string, achievementId: string, unlockedByName: string): Promise<void> {
+    const channelName = `riot-room-${roomId}`;
+    const channel = activeChannels.get(roomId) ?? supabase.channel(channelName);
+    try {
+      await channel.send({
+        type: "broadcast",
+        event: "achievement_unlocked",
+        payload: {
+          achievementId,
+          unlockedByUserId: deviceId(),
+          unlockedByName,
+          timestamp: Date.now(),
+        },
+      });
+    } catch (err) {
+      console.error("[liveBroadcast.unlockAchievement error]", err);
+    }
+  },
+
+  async sendCourtCase(roomId: string, courtCase: CourtCase): Promise<void> {
+    const channelName = `riot-room-${roomId}`;
+    const channel = activeChannels.get(roomId) ?? supabase.channel(channelName);
+    try {
+      await channel.send({
+        type: "broadcast",
+        event: "court_case",
+        payload: {
+          courtCase,
+        },
+      });
+    } catch (err) {
+      console.error("[liveBroadcast.sendCourtCase error]", err);
+    }
+  },
+
+  async sendCourtVerdict(roomId: string, verdict: CourtVerdictPayload): Promise<void> {
+    const channelName = `riot-room-${roomId}`;
+    const channel = activeChannels.get(roomId) ?? supabase.channel(channelName);
+    try {
+      await channel.send({
+        type: "broadcast",
+        event: "court_verdict",
+        payload: {
+          verdict,
+        },
+      });
+    } catch (err) {
+      console.error("[liveBroadcast.sendCourtVerdict error]", err);
+    }
+  },
+
+  async updateStock(roomId: string, stockEvent: RelationshipStockEvent): Promise<void> {
+    const channelName = `riot-room-${roomId}`;
+    const channel = activeChannels.get(roomId) ?? supabase.channel(channelName);
+    try {
+      await channel.send({
+        type: "broadcast",
+        event: "relationship_stock_update",
+        payload: {
+          stockEvent,
+        },
+      });
+    } catch (err) {
+      console.error("[liveBroadcast.updateStock error]", err);
+    }
+  },
+};
+
 export const liveMessages = {
   async list(roomId: string): Promise<LiveMessage[]> {
     const { data, error } = await supabase
@@ -158,6 +273,10 @@ export const liveMessages = {
     roomId: string,
     onMessage: (message: LiveMessage) => void,
     onRoomChange?: (room: RiotRoom) => void,
+    onAchievement?: (payload: AchievementBroadcastPayload) => void,
+    onCourtCase?: (courtCase: CourtCase) => void,
+    onCourtVerdict?: (verdict: CourtVerdictPayload) => void,
+    onStockUpdate?: (event: RelationshipStockEvent) => void,
   ) {
     const channelName = `riot-room-${roomId}`;
     const channel = supabase
@@ -180,13 +299,39 @@ export const liveMessages = {
           }
         },
       )
+      .on("broadcast", { event: "achievement_unlocked" }, ({ payload }) => {
+        if (payload && onAchievement) {
+          onAchievement(payload as AchievementBroadcastPayload);
+        }
+      })
+      .on("broadcast", { event: "court_case" }, ({ payload }) => {
+        if (payload && onCourtCase) {
+          const c = (payload as { courtCase: CourtCase }).courtCase;
+          if (c) onCourtCase(c);
+        }
+      })
+      .on("broadcast", { event: "court_verdict" }, ({ payload }) => {
+        if (payload && onCourtVerdict) {
+          const v = (payload as { verdict: CourtVerdictPayload }).verdict;
+          if (v) onCourtVerdict(v);
+        }
+      })
+      .on("broadcast", { event: "relationship_stock_update" }, ({ payload }) => {
+        if (payload && onStockUpdate) {
+          const s = (payload as { stockEvent: RelationshipStockEvent }).stockEvent;
+          if (s) onStockUpdate(s);
+        }
+      })
       .subscribe((status, err) => {
         if (err) {
           console.error(`[Realtime channel ${channelName} error]:`, err);
         }
       });
 
+    activeChannels.set(roomId, channel);
+
     return () => {
+      activeChannels.delete(roomId);
       void supabase.removeChannel(channel);
     };
   },

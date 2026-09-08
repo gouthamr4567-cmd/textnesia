@@ -8,7 +8,17 @@ import { useRiot } from "../state/RiotProvider";
  * achievement toasts, screen shake and cartoon fire.
  */
 export function RiotStage({ children }: { children: ReactNode }) {
-  const { overlays, projectiles, roasts, achievementToast, shake, onFire, chaosActive } = useRiot();
+  const {
+    overlays,
+    projectiles,
+    roasts,
+    achievementToast,
+    stockToast,
+    isMarketCrash,
+    shake,
+    onFire,
+    chaosActive,
+  } = useRiot();
 
   return (
     <div className={onFire ? "relative" : "relative"}>
@@ -119,15 +129,82 @@ export function RiotStage({ children }: { children: ReactNode }) {
       <AnimatePresence>
         {achievementToast && (
           <motion.div
-            initial={{ y: -60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -60, opacity: 0 }}
-            className="riot-panel fixed left-1/2 top-4 z-50 -translate-x-1/2 border-accent/60 px-5 py-3 text-center shadow-hazard"
+            initial={{ y: -70, opacity: 0, scale: 0.92 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -70, opacity: 0, scale: 0.92 }}
+            transition={{ type: "spring", stiffness: 420, damping: 24 }}
+            className={`riot-panel fixed left-1/2 top-4 z-50 -translate-x-1/2 border-2 px-6 py-3.5 text-center shadow-2xl backdrop-blur-md max-w-md w-[92vw] sm:w-auto ${
+              achievementToast.isPeer
+                ? "border-primary/80 bg-background/95 shadow-primary/30"
+                : "border-accent/90 bg-background/95 shadow-hazard"
+            }`}
           >
-            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
-              Achievement unlocked
+            <div className="flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-accent">
+              <span>🏆</span>
+              <span>
+                {achievementToast.isPeer
+                  ? `${achievementToast.unlockedBy || "OPPONENT"} UNLOCKED`
+                  : "ACHIEVEMENT UNLOCKED"}
+              </span>
             </div>
-            <div className="font-display text-2xl">{achievementToast}</div>
+            <div className="mt-1 flex items-center justify-center gap-2 font-display text-xl sm:text-2xl text-foreground">
+              <span>{achievementToast.emoji}</span>
+              <span className="tracking-wide">{achievementToast.name}</span>
+            </div>
+            {achievementToast.roast && (
+              <p className="mt-1 font-mono text-xs text-muted-foreground italic">
+                “{achievementToast.roast}”
+              </p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Market Crash Alert */}
+      <AnimatePresence>
+        {isMarketCrash && (
+          <motion.div
+            initial={{ y: -80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="fixed inset-x-0 top-0 z-50 flex items-center justify-center gap-2 border-b-2 border-red-500/80 bg-red-600/90 py-2.5 text-center font-display text-xs uppercase tracking-widest text-white shadow-xl backdrop-blur-md sm:text-sm"
+          >
+            <span>🚨</span>
+            <span>RELATIONSHIP MARKET CRASH IN PROGRESS — INVESTOR PANIC</span>
+            <span>🚨</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Stock market floating toast */}
+      <AnimatePresence>
+        {stockToast && (
+          <motion.div
+            key={stockToast.eventId}
+            initial={{ y: -50, opacity: 0, scale: 0.92 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -40, opacity: 0, scale: 0.92 }}
+            transition={{ type: "spring", stiffness: 450, damping: 26 }}
+            className={`fixed right-4 top-4 z-50 flex items-center gap-3 rounded-2xl border-2 px-4 py-2.5 shadow-2xl backdrop-blur-md max-w-sm ${
+              stockToast.priceChange > 0
+                ? "border-emerald-500/80 bg-background/95 text-emerald-400 shadow-emerald-950/50"
+                : "border-red-500/80 bg-background/95 text-red-400 shadow-red-950/50"
+            }`}
+          >
+            <span className="text-2xl">{stockToast.priceChange > 0 ? "📈" : "📉"}</span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
+                <span className={stockToast.priceChange > 0 ? "text-emerald-400" : "text-red-400"}>
+                  {stockToast.priceChange > 0
+                    ? `+₹${stockToast.priceChange.toFixed(2)}`
+                    : `-₹${Math.abs(stockToast.priceChange).toFixed(2)}`}
+                </span>
+                <span className="text-muted-foreground">•</span>
+                <span className="truncate text-foreground">{stockToast.triggeredByUserName}</span>
+              </div>
+              <p className="truncate font-mono text-[11px] text-muted-foreground">{stockToast.reason}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

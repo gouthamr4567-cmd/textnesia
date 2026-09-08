@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { useRiot } from "../state/RiotProvider";
 
 export function Memorial() {
-  const { dead, opponentName, reviveChat, throwLastStone, resetRiot } = useRiot();
+  const { dead, opponentName, reviveChat, throwLastStone, resetRiot, setReportOpen } = useRiot();
   if (!dead) return null;
 
   const year = new Date().getFullYear();
@@ -22,6 +22,12 @@ export function Memorial() {
       <p className="mt-3 text-sm text-muted-foreground">Cause of death: one letter.</p>
 
       <div className="mt-5 flex flex-wrap justify-center gap-2">
+        <button
+          onClick={() => setReportOpen(true)}
+          className="rounded-xl border border-primary/80 bg-primary/20 px-4 py-2 font-display text-lg text-primary transition hover:bg-primary/30"
+        >
+          📑 VIEW FINAL REPORT
+        </button>
         <button
           onClick={throwLastStone}
           className="rounded-xl bg-primary px-4 py-2 font-display text-lg text-primary-foreground shadow-neon transition hover:brightness-110"
