@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "REPLY RIOT — Bad replies. Big consequences." },
+      { title: "TEXTNESIA — Bad texts. Convenient amnesia." },
       {
         name: "description",
         content:
-          "A comedy chat experiment that judges your texting habits with roasts, cartoon rocks and a fake Stone Police force.",
+          "Bad texts. Convenient amnesia. Chat consequences meet memory deletion in this comedy experiment.",
       },
-      { name: "author", content: "REPLY RIOT" },
+      { name: "author", content: "TEXTNESIA" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

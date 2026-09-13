@@ -4,7 +4,16 @@ import { useEffect } from "react";
 import { useRiot } from "../state/RiotProvider";
 
 export function FinalRiotReport() {
-  const { reportOpen, setReportOpen, reportData, resetRiot, setCourtOpen, soundOn } = useRiot();
+  const {
+    reportOpen,
+    setReportOpen,
+    reportData,
+    resetRiot,
+    setCourtOpen,
+    soundOn,
+    setMemoryEraserOpen,
+    setMemoryInitialText,
+  } = useRiot();
 
   useEffect(() => {
     if (reportOpen && soundOn && typeof window !== "undefined") {
@@ -55,6 +64,8 @@ export function FinalRiotReport() {
     myName,
     opponentName,
     roomCode,
+    memoryStats,
+    worstMemory,
   } = reportData;
 
   // Comparison awards
@@ -84,10 +95,10 @@ export function FinalRiotReport() {
                 </span>
               </div>
               <h1 className="mt-2 font-display text-3xl sm:text-5xl tracking-wide text-primary text-glow-siren">
-                FINAL RIOT REPORT™
+                TEXTNESIA FORENSIC DOSSIER™
               </h1>
               <p className="mt-1 font-mono text-xs italic text-accent sm:text-sm">
-                “The evidence is overwhelming.”
+                “Bad texts. Convenient amnesia.”
               </p>
             </div>
 
@@ -365,7 +376,59 @@ export function FinalRiotReport() {
             )}
           </div>
 
-          {/* Section 7: Cinematic Ending */}
+          {/* Section 7: Memory Damage Report */}
+          <div className="mt-5 rounded-2xl border border-accent/60 bg-accent/10 p-5">
+            <div className="flex items-center justify-between border-b border-accent/40 pb-3">
+              <h3 className="font-display text-lg tracking-wide text-foreground">
+                🧠 MEMORY DAMAGE REPORT
+              </h3>
+              <span className="font-mono text-xs text-accent">
+                {memoryStats?.created ?? 0} Incidents Recorded
+              </span>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono text-xs">
+              <div className="rounded-xl border border-border bg-background/50 p-2.5">
+                <span className="text-[10px] text-muted-foreground">Memories Created</span>
+                <div className="mt-1 font-display text-xl text-primary">{memoryStats?.created ?? 0}</div>
+              </div>
+              <div className="rounded-xl border border-border bg-background/50 p-2.5">
+                <span className="text-[10px] text-muted-foreground">Memories Erased</span>
+                <div className="mt-1 font-display text-xl text-chart-4">{memoryStats?.erased ?? 0}</div>
+              </div>
+              <div className="rounded-xl border border-border bg-background/50 p-2.5">
+                <span className="text-[10px] text-muted-foreground">Brain Backups</span>
+                <div className="mt-1 font-display text-xl text-destructive">{memoryStats?.backupsDetected ?? 0}</div>
+              </div>
+              <div className="rounded-xl border border-border bg-background/50 p-2.5">
+                <span className="text-[10px] text-muted-foreground">Restored</span>
+                <div className="mt-1 font-display text-xl text-accent">{memoryStats?.restored ?? 0}</div>
+              </div>
+            </div>
+
+            {worstMemory ? (
+              <div className="mt-3.5 rounded-xl border border-destructive/40 bg-background/70 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase font-bold text-destructive">
+                    WORST RECORDED INCIDENT
+                  </span>
+                  <span className="font-mono text-[10px] text-destructive">
+                    {worstMemory.embarrassment}% Embarrassment
+                  </span>
+                </div>
+                <div className="mt-1 font-display text-base text-foreground">{worstMemory.title}</div>
+                <p className="mt-0.5 font-mono text-xs text-muted-foreground truncate">
+                  "{worstMemory.description}"
+                </p>
+              </div>
+            ) : (
+              <p className="mt-3 text-center font-mono text-xs text-muted-foreground py-1">
+                Zero embarrassing memories recorded yet. Your selective amnesia is working perfectly.
+              </p>
+            )}
+          </div>
+
+          {/* Section 8: Cinematic Ending */}
           <div className="mt-6 border-t-2 border-border/70 pt-6 text-center">
             <div className="inline-block rounded border-2 border-destructive/70 bg-destructive/15 px-4 py-1.5 font-mono text-xs font-bold tracking-widest text-destructive uppercase">
               CASE CLOSED
@@ -378,7 +441,7 @@ export function FinalRiotReport() {
             </div>
           </div>
 
-          {/* Section 8: Action Buttons */}
+          {/* Section 9: Action Buttons */}
           <div className="mt-6 flex flex-wrap justify-center gap-2.5 pt-4 border-t border-border">
             <button
               onClick={() => {
@@ -388,6 +451,16 @@ export function FinalRiotReport() {
               className="rounded-xl bg-primary px-5 py-2.5 font-display text-base text-primary-foreground shadow-neon transition hover:brightness-110"
             >
               🔄 START ANOTHER RIOT
+            </button>
+            <button
+              onClick={() => {
+                setReportOpen(false);
+                setMemoryInitialText("");
+                setMemoryEraserOpen(true);
+              }}
+              className="rounded-xl border border-accent/80 bg-accent/15 px-4 py-2.5 font-display text-base text-accent transition hover:bg-accent/25"
+            >
+              🧠 MEMORY ERASER
             </button>
             <button
               onClick={() => {

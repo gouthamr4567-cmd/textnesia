@@ -17,6 +17,7 @@ import { POLICE_LINES } from "../data/roasts";
 import { analyzeMessage, type Analysis } from "../engine/analyzer";
 import { roastEngine } from "../engine/roastEngine";
 import { soundManager, type SoundId } from "../engine/sound";
+import { memoryService, analyzeMemory, type MemoryIncident, type MemoryStats } from "../services/memoryService";
 import {
   chatService,
   eventService,
@@ -130,6 +131,8 @@ export interface FinalReportData {
   myName: string;
   opponentName: string;
   roomCode?: string | undefined;
+  memoryStats?: MemoryStats;
+  worstMemory?: MemoryIncident | null;
 }
 
 interface RiotContextValue {
@@ -168,6 +171,13 @@ interface RiotContextValue {
   reportOpen: boolean;
   setReportOpen: (v: boolean) => void;
   reportData: FinalReportData;
+  memoryEraserOpen: boolean;
+  setMemoryEraserOpen: (v: boolean) => void;
+  memoryInitialText: string;
+  setMemoryInitialText: (t: string) => void;
+  memoryToast: MemoryIncident | null;
+  dismissMemoryToast: () => void;
+  createMemoryFromChat: (text: string) => MemoryIncident;
   createRoom: (name: string, personality: PersonalityId) => Promise<RiotRoom>;
   joinRoom: (code: string, name: string, personality: PersonalityId) => Promise<RiotRoom>;
   simulatePlayerJoin: () => void;
@@ -281,6 +291,30 @@ export function RiotProvider({ children }: { children: ReactNode }) {
   const [isMarketCrash, setIsMarketCrash] = useState<boolean>(false);
   const [reportOpen, setReportOpen] = useState<boolean>(false);
   const [punishmentHistory, setPunishmentHistory] = useState<PunishmentRecord[]>([]);
+  const [memoryEraserOpen, setMemoryEraserOpen] = useState<boolean>(false);
+  const [memoryInitialText, setMemoryInitialText] = useState<string>("");
+  const [memoryToast, setMemoryToast] = useState<MemoryIncident | null>(null);
+
+  const dismissMemoryToast = useCallback(() => {
+    setMemoryToast(null);
+  }, []);
+
+  const createMemoryFromChat = useCallback((text: string): MemoryIncident => {
+    const analysis = analyzeMemory(text);
+    const newInc: MemoryIncident = {
+      ...analysis,
+      id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      timestamp: Date.now(),
+      status: "ACTIVE",
+      source: "chat",
+    };
+    memoryService.save(newInc);
+    setMemoryToast(newInc);
+    setTimeout(() => {
+      setMemoryToast((cur) => (cur?.id === newInc.id ? null : cur));
+    }, 6000);
+    return newInc;
+  }, []);
 
   const dryStreak = useRef(0);
   const punishmentsReceivedCount = useRef(0);
@@ -1262,6 +1296,11 @@ export function RiotProvider({ children }: { children: ReactNode }) {
               "GUILTY",
             );
           }
+
+          // Phase 7: Connect significant bad-text crimes to Memory Creation
+          if (analysis.isK || analysis.isHmm || (analysis.dryness > 65 && dryStreak.current >= 2)) {
+            createMemoryFromChat(trimmed);
+          }
         } catch (err: unknown) {
           const errMsg = err instanceof Error ? err.message : "Could not deliver message.";
           console.error("Failed to send message to Supabase:", err);
@@ -1333,9 +1372,14 @@ export function RiotProvider({ children }: { children: ReactNode }) {
           "GUILTY",
         );
       }
+
+      if (analysis.isK || analysis.isHmm || (analysis.dryness > 65 && dryStreak.current >= 2)) {
+        createMemoryFromChat(trimmed);
+      }
     },
     [
       bumpCrime,
+      createMemoryFromChat,
       evaluateMessageStock,
       later,
       myName,
@@ -2083,6 +2127,8 @@ export function RiotProvider({ children }: { children: ReactNode }) {
       myName,
       opponentName,
       roomCode: room?.code,
+      memoryStats: memoryService.getStats(),
+      worstMemory: memoryService.getAll().sort((a, b) => b.embarrassment - a.embarrassment)[0] || null,
     };
   }, [
     analyses,
@@ -2136,6 +2182,13 @@ export function RiotProvider({ children }: { children: ReactNode }) {
       reportOpen,
       setReportOpen,
       reportData,
+      memoryEraserOpen,
+      setMemoryEraserOpen,
+      memoryInitialText,
+      setMemoryInitialText,
+      memoryToast,
+      dismissMemoryToast,
+      createMemoryFromChat,
       createRoom,
       joinRoom,
       simulatePlayerJoin,
@@ -2190,6 +2243,11 @@ export function RiotProvider({ children }: { children: ReactNode }) {
       sendMessage,
       setCourtOpenHandler,
       setReportOpen,
+      memoryEraserOpen,
+      memoryInitialText,
+      memoryToast,
+      dismissMemoryToast,
+      createMemoryFromChat,
       shake,
       simulateGhosting,
       simulateLateReply,

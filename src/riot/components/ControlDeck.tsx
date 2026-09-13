@@ -13,9 +13,19 @@ export function ControlDeck() {
     setCourtOpen,
     punish,
     chaosActive,
+    setMemoryEraserOpen,
+    setMemoryInitialText,
   } = useRiot();
 
   const actions: { label: string; onClick: () => void; tone?: "danger" | "hazard" }[] = [
+    {
+      label: "🧠 MEMORY ERASER",
+      onClick: () => {
+        setMemoryInitialText("");
+        setMemoryEraserOpen(true);
+      },
+      tone: "hazard",
+    },
     { label: "👀 SEEN", onClick: simulateSeen },
     { label: "🐢 LATE REPLY", onClick: simulateLateReply },
     { label: "👻 GHOST ME", onClick: simulateGhosting },

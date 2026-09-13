@@ -18,6 +18,10 @@ export function RiotStage({ children }: { children: ReactNode }) {
     shake,
     onFire,
     chaosActive,
+    memoryToast,
+    setMemoryEraserOpen,
+    setMemoryInitialText,
+    dismissMemoryToast,
   } = useRiot();
 
   return (
@@ -204,6 +208,48 @@ export function RiotStage({ children }: { children: ReactNode }) {
                 <span className="truncate text-foreground">{stockToast.triggeredByUserName}</span>
               </div>
               <p className="truncate font-mono text-[11px] text-muted-foreground">{stockToast.reason}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Memory Created floating toast */}
+      <AnimatePresence>
+        {memoryToast && (
+          <motion.div
+            key={memoryToast.id}
+            initial={{ y: 50, opacity: 0, scale: 0.92 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 40, opacity: 0, scale: 0.92 }}
+            transition={{ type: "spring", stiffness: 450, damping: 26 }}
+            className="fixed bottom-5 left-4 z-50 flex items-center gap-3 rounded-2xl border-2 border-primary/70 bg-card/95 p-3.5 shadow-2xl backdrop-blur-md max-w-sm"
+          >
+            <span className="text-3xl">🧠</span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-primary">
+                <span>MEMORY CREATED</span>
+                <span>•</span>
+                <span className="text-destructive font-bold">{memoryToast.embarrassment}% CRINGE</span>
+              </div>
+              <p className="truncate font-display text-sm text-foreground">{memoryToast.title}</p>
+              <div className="mt-1.5 flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setMemoryInitialText(memoryToast.rawText);
+                    setMemoryEraserOpen(true);
+                    dismissMemoryToast();
+                  }}
+                  className="rounded-lg bg-primary/20 border border-primary/50 px-2.5 py-1 font-mono text-[11px] font-bold text-primary transition hover:bg-primary/30"
+                >
+                  🗑️ ERASE THIS MEMORY
+                </button>
+                <button
+                  onClick={dismissMemoryToast}
+                  className="text-muted-foreground hover:text-foreground font-mono text-xs px-1"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

@@ -10,6 +10,7 @@ import { ExcuseGenerator } from "../riot/components/ExcuseGenerator";
 import { FinalRiotReport } from "../riot/components/FinalRiotReport";
 import { Forensics } from "../riot/components/Forensics";
 import { Memorial } from "../riot/components/Memorial";
+import { MemoryEraserModal } from "../riot/components/MemoryEraserModal";
 import { RiotStage } from "../riot/components/RiotStage";
 import { StockMarket } from "../riot/components/StockMarket";
 import { useRiot } from "../riot/state/RiotProvider";
@@ -17,17 +18,17 @@ import { useRiot } from "../riot/state/RiotProvider";
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
-      { title: "The Riot Chat — REPLY RIOT" },
+      { title: "TEXTNESIA Chat — Bad texts. Convenient amnesia." },
       {
         name: "description",
         content:
-          "Live chat with instant roasts, crime meter, cartoon punishments and the Stone Police.",
+          "Live chat with instant roasts, crime meter, cartoon punishments and memory deletion.",
       },
-      { property: "og:title", content: "The Riot Chat — REPLY RIOT" },
+      { property: "og:title", content: "TEXTNESIA Chat — Bad texts. Convenient amnesia." },
       {
         property: "og:description",
         content:
-          "Live chat with instant roasts, crime meter, cartoon punishments and the Stone Police.",
+          "Live chat with instant roasts, crime meter, cartoon punishments and memory deletion.",
       },
     ],
   }),
@@ -55,6 +56,10 @@ function ChatPage() {
     dead,
     stockPrice,
     setReportOpen,
+    memoryEraserOpen,
+    setMemoryEraserOpen,
+    memoryInitialText,
+    setMemoryInitialText,
   } = useRiot();
 
   const [draft, setDraft] = useState("");
@@ -93,7 +98,7 @@ function ChatPage() {
       <main className="mx-auto max-w-6xl px-4 py-5">
         <header className="riot-panel mb-4 flex flex-wrap items-center gap-3 p-3">
           <Link to="/" className="font-display text-2xl text-primary text-glow-siren">
-            💥 REPLY RIOT
+            🧠 TEXTNESIA
           </Link>
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
             {room ? (
@@ -120,6 +125,15 @@ function ChatPage() {
             <span className="rounded-full border border-chart-4/60 px-3 py-1 font-mono text-[10px] text-chart-4">
               🟢 Online
             </span>
+            <button
+              onClick={() => {
+                setMemoryInitialText("");
+                setMemoryEraserOpen(true);
+              }}
+              className="rounded-xl border border-accent/70 bg-accent/15 px-3 py-1.5 font-display text-base text-accent transition hover:bg-accent/25"
+            >
+              🧠 MEMORY ERASER
+            </button>
             <button
               onClick={runDemo}
               className="rounded-xl border border-accent/60 px-3 py-1.5 font-display text-base text-accent transition hover:bg-secondary"
@@ -287,6 +301,11 @@ function ChatPage() {
 
       <ChatCourt />
       <FinalRiotReport />
+      <MemoryEraserModal
+        isOpen={memoryEraserOpen}
+        onClose={() => setMemoryEraserOpen(false)}
+        initialText={memoryInitialText}
+      />
     </RiotStage>
   );
 }

@@ -13,15 +13,15 @@ export const Route = createFileRoute("/lobby")({
   }),
   head: () => ({
     meta: [
-      { title: "Start a Riot — REPLY RIOT" },
+      { title: "Start a Chat — TEXTNESIA" },
       {
         name: "description",
-        content: "Create or join a riot room and pick the texting personality you want judged.",
+        content: "Create or join a TEXTNESIA chat room and pick the texting personality you want judged.",
       },
-      { property: "og:title", content: "Start a Riot — REPLY RIOT" },
+      { property: "og:title", content: "Start a Chat — TEXTNESIA" },
       {
         property: "og:description",
-        content: "Create or join a riot room and pick the texting personality you want judged.",
+        content: "Create or join a TEXTNESIA chat room and pick the texting personality you want judged.",
       },
     ],
   }),
@@ -71,9 +71,9 @@ function Lobby() {
 
   return (
     <main className="mx-auto max-w-4xl px-5 py-12">
-      <h1 className="font-display text-5xl text-primary text-glow-siren">💥 START A RIOT</h1>
+      <h1 className="font-display text-5xl text-primary text-glow-siren">💬 TEXTNESIA CHAT</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Two people. One chat. An unreasonable amount of rocks.
+        Two people. One chat. An unreasonable amount of consequences and amnesia.
       </p>
 
       <div className="mt-6 inline-flex rounded-2xl border border-border p-1">
