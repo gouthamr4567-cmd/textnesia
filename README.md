@@ -14,7 +14,7 @@ Add your deployed Vercel link here.
 
 Example:
 
-https://your-textnesia-project.vercel.app
+[https://your-textnesia-project.vercel.app](https://textnesia.vercel.app/)
 
 ---
 
