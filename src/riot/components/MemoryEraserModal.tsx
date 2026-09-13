@@ -8,6 +8,7 @@ interface MemoryEraserModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialText?: string;
+  initialTab?: "eraser" | "vault";
   onMemoryRecorded?: (incident: MemoryIncident) => void;
 }
 
@@ -15,6 +16,7 @@ export function MemoryEraserModal({
   isOpen,
   onClose,
   initialText = "",
+  initialTab = "eraser",
   onMemoryRecorded,
 }: MemoryEraserModalProps) {
   const [text, setText] = useState(initialText);
@@ -22,11 +24,12 @@ export function MemoryEraserModal({
   const [step, setStep] = useState<Step>("input");
   const [progress, setProgress] = useState(0);
   const [vault, setVault] = useState<MemoryIncident[]>([]);
-  const [tab, setTab] = useState<"eraser" | "vault">("eraser");
+  const [tab, setTab] = useState<"eraser" | "vault">(initialTab);
 
   useEffect(() => {
     if (isOpen) {
       setVault(memoryService.getAll());
+      setTab(initialTab);
       if (initialText) {
         setText(initialText);
         handleAnalyze(initialText);
@@ -34,7 +37,7 @@ export function MemoryEraserModal({
         setStep("input");
       }
     }
-  }, [isOpen, initialText]);
+  }, [isOpen, initialText, initialTab]);
 
   if (!isOpen) return null;
 

@@ -1,16 +1,23 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { PERSONALITIES, type PersonalityId } from "../riot/data/personalities";
 import { useRiot } from "../riot/state/RiotProvider";
 
-type LobbySearch = { mode?: "create" | "join" };
+type LobbySearch = { mode?: "create" | "join"; suspect?: PersonalityId | undefined };
 
 export const Route = createFileRoute("/lobby")({
-  validateSearch: (search: Record<string, unknown>): LobbySearch => ({
-    mode: search["mode"] === "join" ? "join" : "create",
-  }),
+  validateSearch: (search: Record<string, unknown>): LobbySearch => {
+    const validPersonalities: PersonalityId[] = ["dry", "ghoster", "late", "genz", "normal", "overthinker"];
+    const suspectVal = typeof search["suspect"] === "string" && validPersonalities.includes(search["suspect"] as PersonalityId)
+      ? (search["suspect"] as PersonalityId)
+      : undefined;
+    return {
+      mode: search["mode"] === "join" ? "join" : "create",
+      suspect: suspectVal,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Start a Chat — TEXTNESIA" },
@@ -29,17 +36,23 @@ export const Route = createFileRoute("/lobby")({
 });
 
 function Lobby() {
-  const { mode } = Route.useSearch();
+  const { mode, suspect } = Route.useSearch();
   const navigate = useNavigate();
   const { createRoom, joinRoom, room, simulatePlayerJoin, resetRiot } = useRiot();
 
   const [tab, setTab] = useState<"create" | "join">(mode ?? "create");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [personality, setPersonality] = useState<PersonalityId>("normal");
+  const [personality, setPersonality] = useState<PersonalityId>(suspect ?? "normal");
   const [created, setCreated] = useState<string | null>(room?.code ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (suspect) {
+      setPersonality(suspect);
+    }
+  }, [suspect]);
 
   const start = async () => {
     setError(null);
